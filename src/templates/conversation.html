@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Conversation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <h1>Live Audio Sentiment Analysis</h1>
+        <div id="chatBox" class="chat-box">
+            <!-- Chat messages will be dynamically inserted here -->
+        </div>
+
+        <div class="input-container">
+            <button id="startConversationButton" onclick="startConversation()">Start Conversation</button>
+            <button id="listenButton" onclick="startListening()">Listen</button>
+        </div>
+    </div>
+
+    <script>
+        // Function to update the chat box with user input and machine response
+        function updateChatBox(userInput, responseText) {
+            const chatBox = document.getElementById('chatBox');
+            const userMessage = document.createElement('div');
+            userMessage.classList.add('user-message');
+            userMessage.textContent = `You said: ${userInput}`;
+            chatBox.appendChild(userMessage);
+
+            const machineMessage = document.createElement('div');
+            machineMessage.classList.add('machine-message');
+            machineMessage.textContent = responseText;
+            chatBox.appendChild(machineMessage);
+
+            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the latest message
+        }
+
+        // Function to start the conversation
+        function startConversation() {
+            fetch('/start_conversation', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    updateChatBox("Hello, audio is listening", data.response);
+                })
+                .catch(error => console.error('Error starting conversation:', error));
+        }
+
+        // Function to listen to the user input
+        function startListening() {
+            fetch('/listen', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    updateChatBox(data.user_input, data.response);
+                    if (data.end) {
+                        updateChatBox("", data.response);  // End message
+                    }
+                })
+                .catch(error => console.error('Error listening:', error));
+        }
+    </script>
+</body>
+</html>
